@@ -20,4 +20,4 @@ def get_article(url):
 
 if __name__ == '__main__':
     port = os.getenv('NEWSPAPER_PORT', '38765')
-    app.run(port=int(port))
+    app.run(port=int(port), host='0.0.0.0')
