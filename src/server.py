@@ -6,11 +6,18 @@ import os, json
 
 app = Flask(__name__)
 
+@app.route('/', methods = ['GET'])
 @app.route('/topimage',methods = ['GET'])
 def api_top_image():
     url = request.args.get('url')
     article = get_article(url)
-    return json.dumps({"topimage":article.top_image})
+    return json.dumps({
+        "topimage": article.top_image,
+        "text": article.text,
+        "authors":article.authors,
+        "movies": article.movies,
+        "publish_date": article.publish_date,
+        "html": article.html})
 
 def get_article(url):
     article = Article(url, request_timeout=20)
