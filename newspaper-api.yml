@@ -1,11 +1,13 @@
-# Usage:
+# Usage (to create or update):
 # 
 # gcloud init
 # gcloud auth login
 # gcloud components install kubectl
 # gcloud container clusters get-credentials [cluster-name] --project [Project ID]
-# kubectl create -f ./newspaper-api.yml
-# 
+## (http://kubernetes.io/docs/user-guide/managing-deployments/#kubectl-apply)
+# kubectl apply -f .
+#
+#
 #
 # inspired from
 # https://github.com/kubernetes/kubernetes/blob/d4251b2a259ad3b185e13e218b13634d627e0274/examples/guestbook/all-in-one/guestbook-all-in-one.yaml
