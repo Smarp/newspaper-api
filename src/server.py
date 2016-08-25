@@ -12,9 +12,9 @@ def api_top_image():
     url = request.args.get('url')
     article = get_article(url)
     return json.dumps({
-        "authors":article.authors,
+        "authors": article.authors,
         "html": article.html,
-        "images:":article.images,
+        "images:": list(article.images),
         "movies": article.movies,
         "publish_date": article.publish_date,
         "text": article.text,
