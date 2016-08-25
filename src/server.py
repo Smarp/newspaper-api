@@ -19,7 +19,7 @@ def api_top_image():
         "publish_date": article.publish_date,
         "text": article.text,
         "title": article.title,
-        "topimage": article.top_image})
+        "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
 
 def get_article(url):
     article = Article(url, request_timeout=20)

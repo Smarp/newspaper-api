@@ -58,7 +58,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: smarp/newspaper-api:1.2
+        image: smarp/newspaper-api:1.3
         resources:
           requests:
             cpu: 100m
