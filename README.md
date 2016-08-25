@@ -5,10 +5,20 @@ Port: 38765
 
 ## Usage
 
-- `/topimage` returns the top image of the link/article in question
+- `/topimage` and `/` returns the top image of the link/article in question
  
  args:
 
  -- `url`: encoded url
  
-   returns `{"topimage": "top_image_url_of_the_link"}`
+ returns
+ `{
+  "topimage": "string",
+  "title": "string",
+  "text": "string",
+  "publish_date": "publishdate",
+  "movies": "[]string",
+  "images:": "[]string",
+  "html": "string",
+  "authors": "[]string"
+  }`
