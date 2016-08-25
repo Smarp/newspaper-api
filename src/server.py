@@ -5,6 +5,9 @@ from newspaper import Article
 import os, json
 
 app = Flask(__name__)
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 @app.route('/', methods = ['GET'])
 @app.route('/topimage',methods = ['GET'])
@@ -16,7 +19,7 @@ def api_top_image():
         "html": article.html,
         "images:": list(article.images),
         "movies": article.movies,
-        "publish_date": article.publish_date,
+        "publish_date": article.publish_date.strftime("%s") if article.publish_date else None,
         "text": article.text,
         "title": article.title,
         "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
@@ -24,6 +27,8 @@ def api_top_image():
 def get_article(url):
     article = Article(url, request_timeout=20)
     article.download()
+    # uncomment this if 200 is desired in case of bad url
+    # article.set_html(article.html if article.html else '<html></html>')
     article.parse()
     return article
 
