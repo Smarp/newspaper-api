@@ -1,6 +1,6 @@
 FROM checksum/python-newspaper:latest
 
-RUN pip install --no-cache-dir flask
+RUN pip install --no-cache-dir flask uwsgi
 
 
 COPY . .
