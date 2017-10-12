@@ -73,7 +73,7 @@ spec:
           # length of time to wait for a pod to initialize
           # after pod startup, before applying health checking
           initialDelaySeconds: 10
-          timeoutSeconds: 1
+          timeoutSeconds: 3
           successThreshold: 1
           failureThreshold: 1
           periodSeconds: 30
@@ -91,4 +91,4 @@ spec:
     name: newspaper-api
   minReplicas: 3
   maxReplicas: 100
-  targetCPUUtilizationPercentage: 60
+  targetCPUUtilizationPercentage: 50
