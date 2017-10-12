@@ -64,7 +64,7 @@ spec:
         resources:
           requests:
             cpu: 200m
-            memory: 200Mi
+            memory: 300Mi
         livenessProbe:
           # an http probe
           httpGet:
@@ -89,6 +89,6 @@ spec:
   scaleTargetRef:
     kind: Deployment
     name: newspaper-api
-  minReplicas: 1
+  minReplicas: 3
   maxReplicas: 100
   targetCPUUtilizationPercentage: 60
