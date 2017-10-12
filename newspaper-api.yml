@@ -63,22 +63,32 @@ spec:
         image: smarp/newspaper-api:1.3.1
         resources:
           requests:
-            cpu: 100m
-            memory: 100Mi
+            cpu: 200m
+            memory: 200Mi
+        livenessProbe:
+          # an http probe
+          httpGet:
+            path: /topimage?url=https://www.smarp.com/
+            port: 38765
+          # length of time to wait for a pod to initialize
+          # after pod startup, before applying health checking
+          initialDelaySeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 1
+          periodSeconds: 30
         ports:
         - containerPort: 38765
 ---
-apiVersion: extensions/v1beta1
+apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: newspaper-api
   namespace: default
 spec:
-  scaleRef:
+  scaleTargetRef:
     kind: Deployment
     name: newspaper-api
-    subresource: scale
   minReplicas: 1
-  maxReplicas: 5
-  cpuUtilization:
-    targetPercentage: 80
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 60
