@@ -60,15 +60,16 @@ spec:
     spec:
       containers:
       - name: master
-        image: smarp/newspaper-api:1.3.3
+        image: smarp/newspaper-api
+        resources:
         resources:
           requests:
-            cpu: 100m
-            memory: 100Mi
+            cpu: 200m
+            memory: 400Mi
         livenessProbe:
           # an http probe
           httpGet:
-            path: /topimage?url=https://www.smarp.com
+            path: /topimage?url=https://s3-eu-west-1.amazonaws.com/pingdom-test/Smarp.html
             port: 38765
           # length of time to wait for a pod to initialize
           # after pod startup, before applying health checking
@@ -89,6 +90,17 @@ spec:
   scaleTargetRef:
     kind: Deployment
     name: newspaper-api
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 100
-  targetCPUUtilizationPercentage: 50
+  targetCPUUtilizationPercentage: 60
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: newspaper-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: newspaper
+
