@@ -1,10 +1,11 @@
 FROM python:3.7.0-stretch
 
-#Temporarily use Nuno's fork until it is merged to the main project
-RUN git clone https://github.com/NunoPinheiro/newspaper.git && \
-    cd newspaper && pip install -r requirements.txt
-
 RUN pip install --no-cache-dir flask uwsgi
+
+#Clone newspaper project and checkout specific commit
+RUN git clone https://github.com/codelucas/newspaper.git && \
+    cd newspaper && git checkout 9af47d1e25f79720e4d9a48ca83debf1db821b5e \
+    && pip install -r requirements.txt
 
 COPY . .
 ENV NEWSPAPER_PORT 38765
