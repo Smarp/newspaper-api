@@ -3,17 +3,6 @@
 from flask import Flask, url_for, request
 from newspaper import Article
 import os, json
-import requests
-
-EMPTY_PDF_RESPONSE = json.dumps(
-    {"authors": '',
-     "html": '%PDF-',
-     "images:": [],
-     "movies": [],
-     "publish_date": '',
-     "text": '',
-     "title": '',
-     "topimage": ''}), 200, {'Content-Type': 'application/json'}
 
 app = Flask(__name__)
 import logging
@@ -24,8 +13,6 @@ log.setLevel(logging.ERROR)
 @app.route('/topimage',methods = ['GET'])
 def api_top_image():
     url = request.args.get('url')
-    if is_content_pdf(url):
-        return EMPTY_PDF_RESPONSE
     article = get_article(url)
     return json.dumps({
         "authors": article.authors,
@@ -36,12 +23,6 @@ def api_top_image():
         "text": article.text,
         "title": article.title,
         "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
-
-
-def is_content_pdf(url):
-    response = requests.head(url)
-    return response.headers['Content-Type'] == 'application/pdf'
-
 
 def get_article(url):
     pdf_defaults = {"application/pdf": "%PDF-",
