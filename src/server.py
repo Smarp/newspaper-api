@@ -44,7 +44,11 @@ def is_content_pdf(url):
 
 
 def get_article(url):
-    article = Article(url, request_timeout=20)
+    pdf_defaults = {"application/pdf": "%PDF-",
+                    "application/x-pdf": "%PDF-",
+                    "application/x-bzpdf": "%PDF-",
+                    "application/x-gzpdf": "%PDF-"}
+    article = Article(url, request_timeout=20, ignored_content_types_defaults=pdf_defaults)
     article.download()
     # uncomment this if 200 is desired in case of bad url
     # article.set_html(article.html if article.html else '<html></html>')
