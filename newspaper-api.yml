@@ -43,7 +43,7 @@ metadata:
 spec:
   # this replicas value is default
   # modify it according to your case
-  replicas: 1
+  replicas: 3
   # selector can be applied automatically
   # from the labels in the pod template if not set
   # selector:
@@ -90,8 +90,8 @@ spec:
   scaleTargetRef:
     kind: Deployment
     name: newspaper-api
-  minReplicas: 1
-  maxReplicas: 100
+  minReplicas: 3
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 60
 ---
 apiVersion: policy/v1beta1
