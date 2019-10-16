@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from flask import Flask, url_for, request
-from newspaper import Article
+from flask import Flask, request
+from newspaper import Article, fulltext
 import os, json
 
 app = Flask(__name__)
@@ -24,6 +24,15 @@ def api_top_image():
         "title": article.title,
         "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
 
+
+@app.route('/fulltext', methods=['POST'])
+def text():
+    html = request.get_data()
+    return json.dumps({
+        "text": html_to_text(html),
+        }), 200, {'Content-Type': 'application/json'}
+
+
 def get_article(url):
     pdf_defaults = {"application/pdf": "%PDF-",
                     "application/x-pdf": "%PDF-",
@@ -35,6 +44,14 @@ def get_article(url):
     # article.set_html(article.html if article.html else '<html></html>')
     article.parse()
     return article
+
+
+def html_to_text(html):
+    try:
+        return fulltext(html)
+    except Exception:
+        return ""
+
 
 if __name__ == '__main__':
     port = os.getenv('NEWSPAPER_PORT', '38765')
