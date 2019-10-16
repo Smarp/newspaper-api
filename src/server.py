@@ -25,7 +25,7 @@ def api_top_image():
         "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
 
 
-@app.route('/text',methods = ['POST'])
+@app.route('/fulltext', methods=['POST'])
 def text():
     html = request.get_data()
     return json.dumps({
