@@ -16,10 +16,10 @@ linkedinPostUrl = 'https://www.linkedin.com/posts'
 def api_top_image():
     url = request.args.get('url')
 
-    is_linkedin_url =  url.startswith(linkedinPostUrl)
+    is_linkedin_url = url.startswith(linkedinPostUrl)
     if is_linkedin_url:
         config = Config()
-        config.MAX_TITLE=1000
+        config.MAX_TITLE = 1000
         article = get_article(url, config)
         article = replace_title_text_from_title_url(article)
     else:
