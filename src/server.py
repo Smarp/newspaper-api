@@ -1,19 +1,30 @@
 #!/usr/bin/env python
 
 from flask import Flask, request
-from newspaper import Article, fulltext
-import os, json
+from newspaper import Article, fulltext, Config
+import os, json, re
 
 app = Flask(__name__)
 import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
+linkedinPostUrl = 'https://www.linkedin.com/posts'
+
 @app.route('/', methods = ['GET'])
 @app.route('/topimage',methods = ['GET'])
 def api_top_image():
     url = request.args.get('url')
-    article = get_article(url)
+
+    is_linkedin_url = url.startswith(linkedinPostUrl)
+    if is_linkedin_url:
+        config = Config()
+        config.MAX_TITLE = 1000
+        article = get_article(url, config)
+        article = replace_title_text_from_title_url(article)
+    else:
+        article = get_article(url)
+
     return json.dumps({
         "authors": article.authors,
         "html": article.html,
@@ -33,12 +44,12 @@ def text():
         }), 200, {'Content-Type': 'application/json'}
 
 
-def get_article(url):
+def get_article(url, config = Config()):
     pdf_defaults = {"application/pdf": "%PDF-",
                     "application/x-pdf": "%PDF-",
                     "application/x-bzpdf": "%PDF-",
                     "application/x-gzpdf": "%PDF-"}
-    article = Article(url, request_timeout=20, ignored_content_types_defaults=pdf_defaults)
+    article = Article(url, request_timeout=20, ignored_content_types_defaults=pdf_defaults, config=config)
     article.download()
     # uncomment this if 200 is desired in case of bad url
     # article.set_html(article.html if article.html else '<html></html>')
@@ -51,6 +62,14 @@ def html_to_text(html):
         return fulltext(html)
     except Exception:
         return ""
+
+def replace_title_text_from_title_url(article):
+    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', article.title)
+    if len(urls)> 0:
+        article_from_url = get_article(urls[0])
+        article.title = article_from_url.title
+        article.text = article_from_url.text
+    return article
 
 
 if __name__ == '__main__':
