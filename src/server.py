@@ -26,14 +26,14 @@ def api_top_image():
         article = replace_title_text_from_title_url(article)
 
     return json.dumps({
-            "authors": article.authors,
-            "html": article.html,
-            "images:": list(article.images),
-            "movies": article.movies,
-            "publish_date": article.publish_date.strftime("%s") if article.publish_date else None,
-            "text": article.text,
-            "title": article.title,
-            "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
+        "authors": article.authors,
+        "html": article.html,
+        "images:": list(article.images),
+        "movies": article.movies,
+        "publish_date": article.publish_date.strftime("%s") if article.publish_date else None,
+        "text": article.text,
+        "title": article.title,
+        "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
 
 
 @app.route('/fulltext', methods=['POST'])
