@@ -3,6 +3,7 @@
 from flask import Flask, request
 from newspaper import Article, fulltext, Config
 import os, json, re
+from html.parser import HTMLParser
 
 app = Flask(__name__)
 import logging
@@ -64,13 +65,39 @@ def html_to_text(html):
         return ""
 
 def replace_title_text_from_title_url(article):
-    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', article.title)
+    # try to fetch url linkedin post
+    urls = find_urls(article.title)
     if len(urls)> 0:
         article_from_url = get_article(urls[0])
         article.title = article_from_url.title
         article.text = article_from_url.text
+    else:
+        # try to fetch url from HTML <title>
+        parser = HtmlParser()
+        parser.feed(article.html)
+        if parser.tag_content['title'] != "":
+            urls = find_urls(parser.tag_content['title'])
+            if len(urls)> 0:
+                article_from_url = get_article(urls[0])
+                article.title = article_from_url.title
+                article.text = article_from_url.text
     return article
 
+class HtmlParser(HTMLParser):
+    current_tag = ''
+    tag_content = {}
+
+    def handle_starttag(self, tag, attrs):
+        self.current_tag = tag
+
+    def handle_endtag(self, tag):
+        self.current_tag = ''
+
+    def handle_data(self, data):
+        self.tag_content[self.current_tag]=data
+
+def find_urls(string):
+    return re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
 
 if __name__ == '__main__':
     port = os.getenv('NEWSPAPER_PORT', '38765')
