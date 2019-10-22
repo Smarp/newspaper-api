@@ -3,7 +3,7 @@ FROM python:3.7-slim
 RUN apt-get update && \
     apt-get -y install gcc git
 
-RUN pip install --no-cache-dir flask uwsgi
+RUN pip install --no-cache-dir flask uwsgi html.parser
 
 #Clone newspaper project and checkout specific commit
 RUN git clone https://github.com/codelucas/newspaper.git && \
