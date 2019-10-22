@@ -73,7 +73,7 @@ def replace_title_text_from_title_url(article):
         article.text = article_from_url.text
     else:
         # try to fetch url from HTML <title>
-        parser = HtmlParser()
+        parser = HtmlTagParser()
         parser.feed(article.html)
         if parser.tag_content['title'] != "":
             urls = find_urls(parser.tag_content['title'])
@@ -83,7 +83,7 @@ def replace_title_text_from_title_url(article):
                 article.text = article_from_url.text
     return article
 
-class HtmlParser(HTMLParser):
+class HtmlTagParser(HTMLParser):
     current_tag = ''
     tag_content = {}
 
