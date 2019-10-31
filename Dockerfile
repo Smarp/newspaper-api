@@ -1,16 +1,28 @@
-FROM python:3.7-slim
+FROM python:3.8-alpine
 
-RUN apt-get update && \
-    apt-get -y install gcc git
+RUN apk add gcc git
 
-RUN pip install --no-cache-dir flask uwsgi html.parser
+#for pillow
+RUN apk add build-base python-dev py-pip jpeg-dev zlib-dev
+
+#for lxml
+RUN apk add --update --no-cache --virtual .build-deps \
+        g++ \
+        python-dev \
+        libxml2 \
+        libxml2-dev && \
+    apk add libxslt-dev && \
+    apk del .build-deps
+
+RUN pip3 install --no-cache-dir flask html.parser
 
 #Clone newspaper project and checkout specific commit
 RUN git clone https://github.com/codelucas/newspaper.git && \
     cd newspaper && git checkout 11cbf3a3038c0630d14e55743b942b6f36624a6b \
-    && pip install -r requirements.txt
+    && pip3 install -r requirements.txt
 
 COPY . .
 ENV NEWSPAPER_PORT 38765
+ENV PYTHONPATH '/newspaper'
 EXPOSE $NEWSPAPER_PORT
-CMD ["uwsgi", "--ini", "./src/wsgi.ini"]
+CMD ["python", "src/server.py"]
