@@ -16,12 +16,12 @@ RUN apk add --virtual .build-deps \
 # apk for uwsgi
 RUN apk add linux-headers
 
-RUN pip3 install --no-cache-dir flask html.parser uwsgi
+RUN pip install --no-cache-dir flask uwsgi html.parser
 
 #Clone newspaper project and checkout specific commit
 RUN git clone https://github.com/codelucas/newspaper.git && \
     cd newspaper && git checkout 11cbf3a3038c0630d14e55743b942b6f36624a6b \
-    && pip3 install -r requirements.txt
+    && pip install -r requirements.txt
 
 COPY . .
 ENV NEWSPAPER_PORT 38765
