@@ -14,7 +14,10 @@ RUN apk add --update --no-cache --virtual .build-deps \
     apk add libxslt-dev && \
     apk del .build-deps
 
-RUN pip3 install --no-cache-dir flask html.parser
+# for uwsgi
+RUN apk add build-base linux-headers pcre-dev
+
+RUN pip3 install --no-cache-dir flask html.parser uwsgi
 
 #Clone newspaper project and checkout specific commit
 RUN git clone https://github.com/codelucas/newspaper.git && \
@@ -23,6 +26,6 @@ RUN git clone https://github.com/codelucas/newspaper.git && \
 
 COPY . .
 ENV NEWSPAPER_PORT 38765
-ENV PYTHONPATH '/newspaper'
 EXPOSE $NEWSPAPER_PORT
-CMD ["python", "src/server.py"]
+CMD ["uwsgi", "--ini", "./src/wsgi.ini"]
+
