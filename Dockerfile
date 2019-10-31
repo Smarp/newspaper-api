@@ -15,7 +15,7 @@ RUN apk add --update --no-cache --virtual .build-deps \
     apk del .build-deps
 
 # for uwsgi
-RUN apk add build-base linux-headers pcre-dev
+RUN apk add build-base linux-headers
 
 RUN pip3 install --no-cache-dir flask html.parser uwsgi
 
