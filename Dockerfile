@@ -2,10 +2,10 @@ FROM python:3.8-alpine
 
 RUN apk add --update gcc git
 
-#for pillow
+# apk for Pillow
 RUN apk add build-base py-pip jpeg-dev zlib-dev
 
-#for lxml
+# apkfor lxml
 RUN apk add --virtual .build-deps \
         g++ \
         libxml2 \
@@ -13,7 +13,7 @@ RUN apk add --virtual .build-deps \
     apk add libxslt-dev && \
     apk del .build-deps
 
-# for uwsgi
+# apk for uwsgi
 RUN apk add linux-headers
 
 RUN pip3 install --no-cache-dir flask html.parser uwsgi
