@@ -1,21 +1,20 @@
 FROM python:3.8-alpine
 
-RUN apk add gcc git
+RUN apk add --update gcc git
 
 #for pillow
-RUN apk add build-base python-dev py-pip jpeg-dev zlib-dev
+RUN apk add build-base py-pip jpeg-dev zlib-dev
 
 #for lxml
-RUN apk add --update --no-cache --virtual .build-deps \
+RUN apk add --virtual .build-deps \
         g++ \
-        python-dev \
         libxml2 \
         libxml2-dev && \
     apk add libxslt-dev && \
     apk del .build-deps
 
 # for uwsgi
-RUN apk add build-base linux-headers
+RUN apk add linux-headers
 
 RUN pip3 install --no-cache-dir flask html.parser uwsgi
 
@@ -28,4 +27,3 @@ COPY . .
 ENV NEWSPAPER_PORT 38765
 EXPOSE $NEWSPAPER_PORT
 CMD ["uwsgi", "--ini", "./src/wsgi.ini"]
-
