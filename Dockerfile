@@ -1,7 +1,20 @@
-FROM python:3.7-slim
+FROM python:3.8-alpine
 
-RUN apt-get update && \
-    apt-get -y install gcc git
+RUN apk add --update gcc git
+
+# apk for Pillow
+RUN apk add build-base py-pip jpeg-dev zlib-dev
+
+# apkfor lxml
+RUN apk add --virtual .build-deps \
+        g++ \
+        libxml2 \
+        libxml2-dev && \
+    apk add libxslt-dev && \
+    apk del .build-deps
+
+# apk for uwsgi
+RUN apk add linux-headers
 
 RUN pip install --no-cache-dir flask uwsgi html.parser
 
