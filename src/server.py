@@ -10,14 +10,14 @@ import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-linkedinPostUrl = 'https://www.linkedin.com/posts'
+linkedinUrl = 'https://www.linkedin.com/'
 
 @app.route('/', methods = ['GET'])
 @app.route('/topimage',methods = ['GET'])
 def api_top_image():
     url = request.args.get('url')
 
-    is_linkedin_url = url.startswith(linkedinPostUrl)
+    is_linkedin_url = url.startswith(linkedinUrl)
     if is_linkedin_url:
         config = Config()
         config.MAX_TITLE = 1000
