@@ -10,7 +10,7 @@ import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-linkedinPostUrl = 'https://www.linkedin.com/'
+linkedinUrl = 'https://www.linkedin.com/'
 
 @app.route('/', methods = ['GET'])
 @app.route('/topimage',methods = ['GET'])
