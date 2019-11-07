@@ -17,7 +17,7 @@ linkedinUrl = 'https://www.linkedin.com/'
 def api_top_image():
     url = request.args.get('url')
 
-    is_linkedin_url = url.startswith(linkedinPostUrl)
+    is_linkedin_url = url.startswith(linkedinUrl)
     if is_linkedin_url:
         config = Config()
         config.MAX_TITLE = 1000
