@@ -42,7 +42,7 @@ def text():
     html = request.get_data()
     return json.dumps({
         "text": html_to_text(html),
-    }), 200, {'Content-Type': 'application/json'}
+        }), 200, {'Content-Type': 'application/json'}
 
 
 def get_article(url, config = Config()):
@@ -52,7 +52,7 @@ def get_article(url, config = Config()):
                     "application/x-gzpdf": "%PDF-"}
     article = Article(url, request_timeout=20, ignored_content_types_defaults=pdf_defaults, config=config)
     article.download()
-    # uncomment this if 200 is desired i4n case of bad url
+    # uncomment this if 200 is desired in case of bad url
     # article.set_html(article.html if article.html else '<html></html>')
     article.parse()
     if article.text == "":
