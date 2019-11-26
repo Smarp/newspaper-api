@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from flask import Flask, request
-from newspaper import Article, fulltext, Config
+from newspaper import Article, fulltext, Config, build
 import os, json, re
 from html.parser import HTMLParser
 
@@ -55,6 +55,9 @@ def get_article(url, config = Config()):
     # uncomment this if 200 is desired in case of bad url
     # article.set_html(article.html if article.html else '<html></html>')
     article.parse()
+    if article.text == "":
+        paper = build(url, memoize_articles=False, fetch_images=False)
+        article.text = paper.description
     return article
 
 
@@ -63,6 +66,7 @@ def html_to_text(html):
         return fulltext(html)
     except Exception:
         return ""
+
 
 def replace_title_text_from_title_url(article):
     # try to fetch url linkedin post
@@ -83,6 +87,7 @@ def replace_title_text_from_title_url(article):
                 article.text = article_from_url.text
     return article
 
+
 class HtmlTagParser(HTMLParser):
     current_tag = ''
     tag_content = {}
@@ -95,6 +100,7 @@ class HtmlTagParser(HTMLParser):
 
     def handle_data(self, data):
         self.tag_content[self.current_tag]=data
+
 
 def find_urls(string):
     return re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
