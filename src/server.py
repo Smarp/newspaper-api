@@ -56,7 +56,7 @@ def get_article(url, config = Config()):
     # article.set_html(article.html if article.html else '<html></html>')
     article.parse()
     if article.text == "":
-        paper = build(url, memoize_articles=False)
+        paper = build(url, memoize_articles=False, fetch_images=False)
         article.text = paper.description
     return article
 
