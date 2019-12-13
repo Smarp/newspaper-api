@@ -16,7 +16,7 @@ RUN apk add --virtual .build-deps \
 # apk for uwsgi
 RUN apk add linux-headers
 
-RUN pip install --no-cache-dir flask uwsgi html.parser
+RUN pip install --no-cache-dir flask uwsgi html.parser html2text
 
 #Clone newspaper project and checkout specific commit
 RUN git clone https://github.com/codelucas/newspaper.git && \

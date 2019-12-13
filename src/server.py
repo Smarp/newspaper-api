@@ -2,7 +2,7 @@
 
 from flask import Flask, request
 from newspaper import Article, fulltext, Config, build
-import os, json, re
+import os, json, re, html2text
 from html.parser import HTMLParser
 
 app = Flask(__name__)
@@ -39,10 +39,41 @@ def api_top_image():
 
 @app.route('/fulltext', methods=['POST'])
 def text():
-    html = request.get_data()
+    html = request.get_data(as_text=True)
+    text_result = call_simpler_html2text(html)
     return json.dumps({
-        "text": html_to_text(html),
-        }), 200, {'Content-Type': 'application/json'}
+        "text": text_result,
+    }), 200, {'Content-Type': 'application/json'}
+
+
+def call_simpler_html2text(html):
+    extractor = configure_extractor()
+    text_result = extractor.handle(html)
+    return cleanup_extra_symbols(text_result)
+
+
+def cleanup_extra_symbols(text_result):
+    text_result = text_result.replace("#", "")
+    text_result = text_result.replace("~~", "")
+    text_result = re.sub(' +', ' ', text_result)
+    text_result = re.sub('\n ', '\n', text_result).strip()
+    text_result = re.sub('\n+', '\n', text_result).strip()
+    return text_result
+
+
+def configure_extractor():
+    html_text = html2text.HTML2Text()
+    html_text.ignore_links = True
+    html_text.ignore_images = True
+    html_text.ignore_emphasis = True
+    html_text.hide_strikethrough = True
+    html_text.abbr_title = True
+    html_text.strong_mark = ""
+    html_text.ul_item_mark = ""
+    html_text.emphasis_mark = ""
+    html_text.unicode_snob = True
+    html_text.ignore_tables = True
+    return html_text
 
 
 def get_article(url, config = Config()):
