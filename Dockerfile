@@ -24,6 +24,8 @@ RUN git clone https://github.com/codelucas/newspaper.git && \
     && pip install -r requirements.txt
 
 COPY . .
+RUN python "/src/add_custom_certificates.py"
+
 ENV NEWSPAPER_PORT 38765
 EXPOSE $NEWSPAPER_PORT
 CMD ["uwsgi", "--ini", "./src/wsgi.ini"]
