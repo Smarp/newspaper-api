@@ -86,7 +86,7 @@ def get_article(url, config = Config()):
     # uncomment this if 200 is desired in case of bad url
     # article.set_html(article.html if article.html else '<html></html>')
     article.parse()
-    if article.text == "":
+    if article.text == "" and article.html != "%PDF-":
         paper = build(url, memoize_articles=False, fetch_images=False)
         article.text = paper.description
     return article
