@@ -4,6 +4,7 @@ from flask import Flask, request
 from newspaper import Article, fulltext, Config, build
 import os, json, re, html2text
 from html.parser import HTMLParser
+from webpreview import web_preview
 
 app = Flask(__name__)
 import logging
@@ -11,11 +12,22 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 linkedinUrl = 'https://www.linkedin.com/'
+ogTagMethod = "ogtag"
 
 @app.route('/', methods = ['GET'])
 @app.route('/topimage',methods = ['GET'])
 def api_top_image():
     url = request.args.get('url')
+    fetchMethod = request.args.get('fetch_method')
+
+    if fetchMethod == ogTagMethod:
+        title, description, image = web_preview(url,timeout=20)
+        return json.dumps({
+            "text": description,
+            "title": title,
+            "images:": list(image),
+            "topimage": image
+        })
 
     is_linkedin_url = url.startswith(linkedinUrl)
     if is_linkedin_url:
