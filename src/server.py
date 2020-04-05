@@ -53,18 +53,18 @@ def fetch_by_newspaper(url):
 
 
 def fetch_og_tags(url):
-    title, description, image = web_preview(url, timeout=20)
+    title, description, imageUrl = web_preview(url, timeout=20)
 
-    if image != "" and not image.startswith("http") and not image.startswith("https"):
+    if imageUrl != "" and not imageUrl.startswith("http") and not imageUrl.startswith("https"):
         urlParseResult = urlparse(url)
-        image = urlParseResult.scheme + "://" + urlParseResult.netloc + image
+        imageUrl = urlParseResult.scheme + "://" + urlParseResult.netloc + imageUrl
 
     return json.dumps({
         "text": description,
         "title": title,
-        "images:": list(image),
-        "topimage": image
-    })
+        "images:": list(imageUrl),
+        "topimage": imageUrl
+    }), 200, {'Content-Type': 'application/json'}
 
 
 @app.route('/fulltext', methods=['POST'])
