@@ -1,22 +1,37 @@
 #!/usr/bin/env python
 
+import logging
 from flask import Flask, request
 from newspaper import Article, fulltext, Config, build
-import os, json, re, html2text
+import os
+import json
+import re
+import html2text
 from html.parser import HTMLParser
+from webpreview import web_preview
+from urllib.parse import urlparse
 
 app = Flask(__name__)
-import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 linkedinUrl = 'https://www.linkedin.com/'
+OG_TAG_METHOD = "ogtag"
 
-@app.route('/', methods = ['GET'])
-@app.route('/topimage',methods = ['GET'])
+
+@app.route('/', methods=['GET'])
+@app.route('/topimage', methods=['GET'])
 def api_top_image():
     url = request.args.get('url')
+    fetch_method = request.args.get('fetch_method')
 
+    if fetch_method == OG_TAG_METHOD:
+        return fetch_og_tags(url)
+
+    return fetch_by_newspaper(url)
+
+
+def fetch_by_newspaper(url):
     is_linkedin_url = url.startswith(linkedinUrl)
     if is_linkedin_url:
         config = Config()
@@ -35,6 +50,21 @@ def api_top_image():
         "text": article.text,
         "title": article.title,
         "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
+
+
+def fetch_og_tags(url):
+    title, description, imageUrl = web_preview(url, timeout=20)
+
+    if imageUrl != "" and not imageUrl.startswith("http") and not imageUrl.startswith("https"):
+        urlParseResult = urlparse(url)
+        imageUrl = urlParseResult.scheme + "://" + urlParseResult.netloc + imageUrl
+
+    return json.dumps({
+        "text": description,
+        "title": title,
+        "images:": list(imageUrl),
+        "topimage": imageUrl
+    }), 200, {'Content-Type': 'application/json'}
 
 
 @app.route('/fulltext', methods=['POST'])
@@ -76,12 +106,13 @@ def configure_extractor():
     return html_text
 
 
-def get_article(url, config = Config()):
+def get_article(url, config=Config()):
     pdf_defaults = {"application/pdf": "%PDF-",
                     "application/x-pdf": "%PDF-",
                     "application/x-bzpdf": "%PDF-",
                     "application/x-gzpdf": "%PDF-"}
-    article = Article(url, request_timeout=20, ignored_content_types_defaults=pdf_defaults, config=config)
+    article = Article(url, request_timeout=20,
+                      ignored_content_types_defaults=pdf_defaults, config=config)
     article.download()
     # uncomment this if 200 is desired in case of bad url
     # article.set_html(article.html if article.html else '<html></html>')
@@ -102,7 +133,7 @@ def html_to_text(html):
 def replace_title_text_from_title_url(article):
     # try to fetch url linkedin post
     urls = find_urls(article.title)
-    if len(urls)> 0:
+    if len(urls) > 0:
         article_from_url = get_article(urls[0])
         article.title = article_from_url.title
         article.text = article_from_url.text
@@ -112,7 +143,7 @@ def replace_title_text_from_title_url(article):
         parser.feed(article.html)
         if parser.tag_content['title'] != "":
             urls = find_urls(parser.tag_content['title'])
-            if len(urls)> 0:
+            if len(urls) > 0:
                 article_from_url = get_article(urls[0])
                 article.title = article_from_url.title
                 article.text = article_from_url.text
@@ -130,11 +161,12 @@ class HtmlTagParser(HTMLParser):
         self.current_tag = ''
 
     def handle_data(self, data):
-        self.tag_content[self.current_tag]=data
+        self.tag_content[self.current_tag] = data
 
 
 def find_urls(string):
     return re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
+
 
 if __name__ == '__main__':
     port = os.getenv('NEWSPAPER_PORT', '38765')
