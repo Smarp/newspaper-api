@@ -10,6 +10,7 @@ import html2text
 from html.parser import HTMLParser
 from webpreview import web_preview
 from urllib.parse import urlparse
+from lxml import etree
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
@@ -133,20 +134,25 @@ def html_to_text(html):
 def replace_title_text_from_title_url(article):
     # try to fetch url linkedin post
     urls = find_urls(article.title)
+    if len(urls) == 0:
+        parser = HtmlTagParser()
+        parser.feed(article.html)
+
+        if parser.tag_content['title'] != "":
+            urls = find_urls(parser.tag_content['title'])
+
+    if len(urls) == 0:
+        htmlTree = etree.HTML(article.html)
+        urls = htmlTree.xpath(
+            "//*[contains(@class, 'share-article__title-link')]/@href")
+
     if len(urls) > 0:
         article_from_url = get_article(urls[0])
         article.title = article_from_url.title
         article.text = article_from_url.text
     else:
-        # try to fetch url from HTML <title>
-        parser = HtmlTagParser()
-        parser.feed(article.html)
-        if parser.tag_content['title'] != "":
-            urls = find_urls(parser.tag_content['title'])
-            if len(urls) > 0:
-                article_from_url = get_article(urls[0])
-                article.title = article_from_url.title
-                article.text = article_from_url.text
+        print("Linkedin: No shared link at all")
+
     return article
 
 
