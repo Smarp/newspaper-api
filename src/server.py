@@ -33,14 +33,14 @@ def api_top_image():
 
 def fetch_by_newspaper(url):
     is_linkedin_url = url.startswith(linkedinUrl)
+    config = Config()
+    config.headers = {"Accept-Language": "en-US,en;q=0.5"}
     if is_linkedin_url:
-        config = Config()
         config.MAX_TITLE = 1000
         article = get_article(url, config)
         article = replace_title_text_from_title_url(article)
     else:
-        article = get_article(url)
-
+        article = get_article(url, config)
     return json.dumps({
         "authors": article.authors,
         "html": article.html,
