@@ -33,14 +33,20 @@ def api_top_image():
 
 def fetch_by_newspaper(url):
     is_linkedin_url = url.startswith(linkedinUrl)
-    config = Config()
-    config.headers = {"Accept-Language": "en-US,en;q=0.5"}
+    is_youtube_url = url.startswith("https://www.youtube.com/") or url.startswith("https://www.youtu.be/")
+    
     if is_linkedin_url:
+        config = Config()
         config.MAX_TITLE = 1000
         article = get_article(url, config)
         article = replace_title_text_from_title_url(article)
-    else:
+    elif is_youtube_url:
+        config = Config()
+        # this is just to temporarily bypass the consent page
+        config.headers = {"User-Agent": "curl"}
         article = get_article(url, config)
+    else:
+        article = get_article(url)
     return json.dumps({
         "authors": article.authors,
         "html": article.html,
