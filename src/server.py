@@ -21,10 +21,12 @@ YOUTUBE_URLS = [
     "https://www.youtu.be/",
     "https://youtu.be/",
     "https://youtube.com/",
+    "https://m.youtube.com/",
     "http://www.youtube.com/",
     "http://www.youtu.be/",
     "http://youtu.be/",
-    "http://youtube.com/"
+    "http://youtube.com/",
+    "http://m.youtube.com/",
 ]
 OG_TAG_METHOD = "ogtag"
 
