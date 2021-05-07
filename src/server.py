@@ -16,6 +16,18 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 linkedinUrl = 'https://www.linkedin.com/'
+YOUTUBE_URLS = [
+    "https://www.youtube.com/",
+    "https://www.youtu.be/",
+    "https://youtu.be/",
+    "https://youtube.com/",
+    "https://m.youtube.com/",
+    "http://www.youtube.com/",
+    "http://www.youtu.be/",
+    "http://youtu.be/",
+    "http://youtube.com/",
+    "http://m.youtube.com/",
+]
 OG_TAG_METHOD = "ogtag"
 
 
@@ -33,14 +45,19 @@ def api_top_image():
 
 def fetch_by_newspaper(url):
     is_linkedin_url = url.startswith(linkedinUrl)
+
     if is_linkedin_url:
         config = Config()
         config.MAX_TITLE = 1000
         article = get_article(url, config)
         article = replace_title_text_from_title_url(article)
+    elif is_youtube_url(url):
+        config = Config()
+        # this is just to temporarily bypass the consent page
+        config.headers = {"User-Agent": "curl"}
+        article = get_article(url, config)
     else:
         article = get_article(url)
-
     return json.dumps({
         "authors": article.authors,
         "html": article.html,
@@ -51,6 +68,11 @@ def fetch_by_newspaper(url):
         "title": article.title,
         "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
 
+def is_youtube_url(url):
+    for youtube_url in YOUTUBE_URLS:
+        if url.startswith(youtube_url):
+            return True
+    return False
 
 def fetch_og_tags(url):
     title, description, imageUrl = web_preview(url, timeout=20)
