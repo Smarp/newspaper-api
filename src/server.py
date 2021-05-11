@@ -58,6 +58,9 @@ def fetch_by_newspaper(url):
         article = get_article(url, config)
     else:
         article = get_article(url)
+        if article.text == "":
+            ogArticle = fetch_og_tags(url)
+            article.text = ogArticle.text
     return json.dumps({
         "authors": article.authors,
         "html": article.html,
