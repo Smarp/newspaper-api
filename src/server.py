@@ -185,7 +185,6 @@ def replace_title_text_from_title_url(article):
 
     return article
 
-
 def find_urls(string):
     return re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
 
