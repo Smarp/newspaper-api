@@ -56,6 +56,9 @@ def fetch_by_newspaper(url):
         # this is just to temporarily bypass the consent page
         config.headers = {"User-Agent": "curl"}
         article = get_article(url, config)
+        if article.text == "":
+            _, description, _ = fetch_og_tags_internal(url)
+            article.text = description
     else:
         article = get_article(url)
     return json.dumps({
@@ -68,15 +71,22 @@ def fetch_by_newspaper(url):
         "title": article.title,
         "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
 
+
 def is_youtube_url(url):
     for youtube_url in YOUTUBE_URLS:
         if url.startswith(youtube_url):
             return True
     return False
 
-def fetch_og_tags(url):
-    title, description, imageUrl = web_preview(url, timeout=20)
 
+def fetch_og_tags_internal(url):
+    if is_youtube_url(url):
+        return web_preview(url, timeout=20, headers={"User-Agent": "curl"})
+    return web_preview(url, timeout=20)
+
+
+def fetch_og_tags(url):
+    title, description, imageUrl = fetch_og_tags_internal(url)
     if imageUrl != "" and not imageUrl.startswith("http") and not imageUrl.startswith("https"):
         urlParseResult = urlparse(url)
         imageUrl = urlParseResult.scheme + "://" + urlParseResult.netloc + imageUrl
