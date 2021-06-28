@@ -86,7 +86,7 @@ kind: PodDisruptionBudget
 metadata:
   name: newspaper-pdb
 spec:
-  minAvailable: 1
+  minAvailable: 50%
   selector:
     matchLabels:
       app: newspaper
