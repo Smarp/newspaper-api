@@ -54,16 +54,23 @@ spec:
           limits:
             cpu: 400m
             memory: 640Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 38765
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+          periodSeconds: 10
         livenessProbe:
           httpGet:
-            path: /topimage?url=https://s3-eu-west-1.amazonaws.com/pingdom-test/Smarp.html
+            path: /health
             port: 38765
-          # length of time to wait for a pod to initialize
-          # after pod startup, before applying health checking
-          initialDelaySeconds: 10
-          timeoutSeconds: 10
+          initialDelaySeconds: 20
+          timeoutSeconds: 5
           successThreshold: 1
-          failureThreshold: 1
+          failureThreshold: 3
           periodSeconds: 30
         ports:
         - containerPort: 38765
