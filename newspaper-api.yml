@@ -50,7 +50,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: smarp/newspaper-api
+        image: smarp/newspaper-api:v2.0
         resources:
         resources:
           requests:
