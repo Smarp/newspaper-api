@@ -22,7 +22,7 @@ metadata:
 spec:
   ports:
     # the port that this service should serve on
-  - port: 38765
+  - port: 80
     targetPort: 38765
   type: LoadBalancer
   selector:
