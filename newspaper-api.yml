@@ -22,7 +22,7 @@ metadata:
 spec:
   ports:
     # the port that this service should serve on
-  - port: 38765
+  - port: 80
     targetPort: 38765
   type: LoadBalancer
   selector:
@@ -30,12 +30,17 @@ spec:
     tier: backend
     role: master
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: newspaper-api
 spec:
   replicas: 3
+  selector:
+    matchLabels:
+      app: newspaper
+      role: master
+      tier: backend
   template:
     metadata:
       labels:
@@ -45,7 +50,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: smarp/newspaper-api
+        image: smarp/newspaper-api:v2.0
         resources:
         resources:
           requests:
@@ -75,18 +80,38 @@ spec:
         ports:
         - containerPort: 38765
 ---
-apiVersion: autoscaling/v1
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   name: newspaper-api
   namespace: default
 spec:
   scaleTargetRef:
+    apiVersion: apps/v1
     kind: Deployment
     name: newspaper-api
   minReplicas: 3
   maxReplicas: 10
-  targetCPUUtilizationPercentage: 60
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300 # desired replicas capped to the maximum recommendation within 5 mins
+      policies: # limit scale down rate, max 1 pod every 10 mins
+      - type: Pods
+        value: 1
+        periodSeconds: 600
+    scaleUp:
+      stabilizationWindowSeconds: 0 # no stabilisation
+      policies: # limit scale up rate, max 2 pods every min
+      - type: Pods
+        value: 2
+        periodSeconds: 60
 ---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
