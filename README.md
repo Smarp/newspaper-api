@@ -23,7 +23,6 @@ Port: 38765
   "authors": "[]string"
   }`
 
-
 ## Local build & launch
 * `git clone https://github.com/Smarp/newspaper-api`
 * `docker build -t news .`
