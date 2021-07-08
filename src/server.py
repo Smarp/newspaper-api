@@ -32,8 +32,7 @@ OG_TAG_METHOD = "ogtag"
 
 @app.route('/health', methods=['GET'])
 def health():
-    status_code = Flask.Response(status=200)
-    return status_code
+    return 'OK', 200
 
 
 @app.route('/', methods=['GET'])
