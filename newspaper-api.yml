@@ -54,10 +54,10 @@ spec:
         resources:
         resources:
           requests:
-            cpu: 200m
+            cpu: 400m
             memory: 400Mi
           limits:
-            cpu: 400m
+            cpu: 750m
             memory: 640Mi
         readinessProbe:
           httpGet:
@@ -95,10 +95,10 @@ spec:
   metrics:
   - type: Resource
     resource:
-      name: cpu
+      name: memory
       target:
         type: Utilization
-        averageUtilization: 60
+        averageUtilization: 75
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300 # desired replicas capped to the maximum recommendation within 5 mins
