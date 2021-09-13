@@ -20,11 +20,11 @@ metadata:
     tier: backend
     role: master
 spec:
+  type: ClusterIP
   ports:
-    # the port that this service should serve on
   - port: 80
-    targetPort: 38765
-  type: LoadBalancer
+    name: http
+    targetPort: http
   selector:
     app: newspaper
     tier: backend
@@ -79,6 +79,8 @@ spec:
           periodSeconds: 30
         ports:
         - containerPort: 38765
+          name: http
+          protocol: TCP
 ---
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
