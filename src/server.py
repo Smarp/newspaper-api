@@ -62,7 +62,7 @@ def fetch_og_tags_internal(url):
 
 def fetch_og_tags(url):
     title, description, imageUrl = fetch_og_tags_internal(url)
-    if imageUrl != "" and not imageUrl.startswith("http") and not imageUrl.startswith("https"):
+    if imageUrl and not imageUrl.startswith("http") and not imageUrl.startswith("https"):
         urlParseResult = urlparse(url)
         imageUrl = urlParseResult.scheme + "://" + urlParseResult.netloc + imageUrl
 
