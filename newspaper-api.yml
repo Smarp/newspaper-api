@@ -50,7 +50,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: smarp/newspaper-api:v2.3
+        image: smarp/newspaper-api:v2.4
         resources:
         resources:
           requests:
@@ -81,6 +81,17 @@ spec:
         - containerPort: 38765
           name: http
           protocol: TCP
+        env:
+          - name: CUSTOM_USER_AGENT
+            valueFrom:
+              configMapKeyRef:
+                name: newspaper-api-env
+                key: custom_user_agent
+          - name: CUSTOM_DOMAINS
+            valueFrom:
+              configMapKeyRef:
+                name: newspaper-api-env
+                key: custom_domains
 ---
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
@@ -124,4 +135,12 @@ spec:
   selector:
     matchLabels:
       app: newspaper
-
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: newspaper-api-env
+  namespace: default
+data:
+  custom_user_agent: ""
+  custom_domains: ""
