@@ -34,3 +34,11 @@ Port: 38765
 * wait until new docker image will be available for that tag https://hub.docker.com/r/smarp/newspaper-api/tags (might take 5-30 min)  
 * `kubectl diff -f newspaper-api.yml` to check for what’s going to be applied
 * `kubectl apply -f newspaper-api.yml` to update the deployment with the new tag
+
+## Environment Variables
+
+When fetching urls through newspaper api, CUSTOM_USER_AGENT value is used as user agent header for domains in the CUSTOM_DOMAINS set.
+ 
+* CUSTOM_DOMAINS: List of domain names seperated by space e.g. 'domain1.test domain2.test domain3.test'
+
+* CUSTOM_USER_AGENT: String, e.g. 'Mozilla/5.0'

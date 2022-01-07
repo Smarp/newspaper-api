@@ -17,6 +17,9 @@ log.setLevel(logging.ERROR)
 
 linkedinUrl = 'https://www.linkedin.com/'
 
+CUSTOM_USER_AGENT = os.getenv('CUSTOM_USER_AGENT', Config().browser_user_agent)
+CUSTOM_DOMAINS = set(os.getenv('CUSTOM_DOMAINS', '').split())
+
 OG_TAG_METHOD = "ogtag"
 
 @app.route('/health', methods=['GET'])
@@ -45,7 +48,7 @@ def fetch_by_newspaper(url):
         article = get_article(url, config)
         article = replace_title_text_from_title_url(article)
     else:
-        article = get_article(url)
+        article = get_article(url, config=get_config(url))
     return json.dumps({
         "authors": article.authors,
         "html": article.html,
@@ -163,6 +166,13 @@ def replace_title_text_from_title_url(article):
 def find_urls(string):
     return re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
 
+def get_config(url):
+    parseResult = urlparse(url)
+    config = Config()
+    if parseResult.hostname in CUSTOM_DOMAINS:
+        config.browser_user_agent = CUSTOM_USER_AGENT
+
+    return config
 
 if __name__ == '__main__':
     port = os.getenv('NEWSPAPER_PORT', '38765')

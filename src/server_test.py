@@ -1,4 +1,7 @@
-import unittest
+import unittest.mock
+from unittest.mock import patch
+
+from newspaper import Article, Config
 import server
 
 
@@ -13,3 +16,34 @@ class TestServer(unittest.TestCase):
         self.assertEqual(result, 'I´m')
         result = server.call_simpler_html2text("<ol><li>number one </li><li>number two</li><li>number three</li></ol><p><br></p><p>Test article</p><h2>Header average</h2><p><br></p><p><strong>Very interesting my one at on article</strong></p><ol><li><strong>first bold and list option </strong></li></ol><p><strong><em>italic bold text </em></strong></p><ul><li>option 0</li><li>option 1</li><li>option 2</li></ul><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><h1>Header very huge</h1>")
         self.assertEqual(result, "1. number one \n2. number two\n3. number three\nTest article\nHeader average\nVery interesting my one at on article\n1. first bold and list option \nitalic bold text\noption 0\noption 1\noption 2\nHeader very huge")
+
+    def test_get_config_with_default_useragent(self):
+        server.CUSTOM_DOMAINS = {'domain1.test'}
+        url = 'https://ab.cd/path1/path2?q=1'
+
+        config = server.get_config(url)
+
+        self.assertEqual(config.browser_user_agent, Config().browser_user_agent)
+
+    def test_get_config_with_custom_useragent(self):
+        server.CUSTOM_USER_AGENT = "test/1.0"
+        server.CUSTOM_DOMAINS = {'domain1.test', 'ab.cd'}
+        url = 'https://ab.cd/path1/path2?q=1'
+
+        config = server.get_config(url)
+
+        self.assertEqual(config.browser_user_agent, "test/1.0")
+
+    @patch('server.get_article')
+    def test_fetch_with_custom_useragent(self, get_article_patch):
+
+        server.CUSTOM_USER_AGENT = 'test/1.0'
+        server.CUSTOM_DOMAINS = {'ab.cd'}
+        url = 'https://ab.cd/path1/path2?q=1'
+        article = Article(url)
+
+        get_article_patch.return_value = article
+        result = server.fetch_by_newspaper(url)
+
+        self.assertEqual(result[0], '{"authors": [], "html": "", "images:": [], "movies": [], "publish_date": null, "text": "", "title": "", "topimage": ""}')
+        self.assertEqual(get_article_patch.call_args.kwargs['config'].browser_user_agent, "test/1.0" )
