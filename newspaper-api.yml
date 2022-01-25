@@ -52,7 +52,6 @@ spec:
       - name: master
         image: smarp/newspaper-api:v2.5
         resources:
-        resources:
           requests:
             cpu: 400m
             memory: 400Mi

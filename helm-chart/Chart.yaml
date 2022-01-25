@@ -1,0 +1,5 @@
+apiVersion: v2
+name: newspaper-api
+description: A Helm chart for Smarp's Newspaper API application
+type: application
+version: 0.1.0
