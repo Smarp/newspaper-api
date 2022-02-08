@@ -9,6 +9,7 @@ import re
 import html2text
 from webpreview import web_preview
 from urllib.parse import urlparse
+from urllib.parse import parse_qs
 from lxml import etree
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 linkedinUrl = 'https://www.linkedin.com/'
+linkedinRedirectUrl = 'https://www.linkedin.com/redir/redirect'
 
 CUSTOM_USER_AGENT = os.getenv('CUSTOM_USER_AGENT', Config().browser_user_agent)
 CUSTOM_DOMAINS = set(os.getenv('CUSTOM_DOMAINS', '').split())
@@ -38,11 +40,14 @@ def api_top_image():
 
     return fetch_by_newspaper(url)
 
+def is_linkedin_url(url):
+    return url.startswith(linkedinUrl)
+
+def is_linkedin_redirect_url(url):
+    return url.startswith(linkedinRedirectUrl)
 
 def fetch_by_newspaper(url):
-    is_linkedin_url = url.startswith(linkedinUrl)
-
-    if is_linkedin_url:
+    if is_linkedin_url(url):
         config = Config()
         config.MAX_TITLE = 1000
         article = get_article(url, config)
@@ -139,6 +144,20 @@ def html_to_text(html):
     except Exception:
         return ""
 
+def find_redirect_url(url):
+    if not is_linkedin_redirect_url(url):
+        return None
+
+    parse_result = urlparse(url)
+    query_url = parse_qs(parse_result.query).get("url")
+    if query_url == None:
+        return None
+
+    redirect_urls = find_urls(query_url[0])
+    if len(redirect_urls) == 0:
+        return None
+
+    return redirect_urls[0]
 
 def replace_title_text_from_title_url(article):
     # try to fetch url linkedin post
@@ -151,11 +170,17 @@ def replace_title_text_from_title_url(article):
             urls = find_urls(title[0])
 
     if len(urls) == 0:
+        # Try to retrieve link in update section of the page
         urls = htmlTree.xpath(
-            "//*[contains(@class, 'share-article__title-link')]/@href")
+            "//*[contains(@class, 'share-update-section')]//*[contains(@class, 'share-article__title-link')]/@href")
 
     if len(urls) > 0:
-        article_from_url = get_article(urls[0])
+        # check if url is a redirection link
+        url = find_redirect_url(urls[0])
+        if url == None:
+            url = urls[0]
+
+        article_from_url = get_article(url)
         article.title = article_from_url.title
         article.text = article_from_url.text
     else:
