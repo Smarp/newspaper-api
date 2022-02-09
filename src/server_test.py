@@ -47,3 +47,11 @@ class TestServer(unittest.TestCase):
 
         self.assertEqual(result[0], '{"authors": [], "html": "", "images:": [], "movies": [], "publish_date": null, "text": "", "title": "", "topimage": ""}')
         self.assertEqual(get_article_patch.call_args.kwargs['config'].browser_user_agent, "test/1.0" )
+
+    def test_fetch_linkedin_redirect_url(self):
+
+        self.assertEqual(server.find_redirect_url("https://ab.cd"), None)
+        self.assertEqual(server.find_redirect_url("https://www.linkedin.com"), None)
+        self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect"), None)
+        self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect?url=abc"), None)
+        self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fab.cd"), "https://ab.cd")
