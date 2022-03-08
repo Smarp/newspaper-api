@@ -55,3 +55,12 @@ class TestServer(unittest.TestCase):
         self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect"), None)
         self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect?url=abc"), None)
         self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fab.cd"), "https://ab.cd")
+
+    def test_cleanup_extra_ids(self):
+        url = 'https://ab.cd/path1/path2?q=1'
+        config = Config()
+        config.cleanup_extra_ids = ['id1']
+        article = Article(url, config=config)
+        article.set_html("<html><body><p id='id1'>To be cleaned</p><p>This is example paragraph with some text123.</p></body></html>")
+        article.parse()
+        self.assertFalse('To be cleaned' in article.text)
