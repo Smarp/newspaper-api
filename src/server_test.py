@@ -64,3 +64,4 @@ class TestServer(unittest.TestCase):
         article.set_html("<html><body><p id='id1'>To be cleaned</p><p>This is example paragraph with some text123.</p></body></html>")
         article.parse()
         self.assertFalse('To be cleaned' in article.text)
+    
