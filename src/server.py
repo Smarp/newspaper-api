@@ -27,17 +27,17 @@ OG_TAG_METHOD = "ogtag"
 from newspaper.cleaners import DocumentCleaner
 
 # Patch document cleanup regex for custom element ids 
-def get_remove_nodes_re(self):
+def get_remove_nodes_regex(self):
     return self._remove_nodes_re
 
-def set_remove_nodes_re(self, value):
+def set_remove_nodes_regex(self, value):
     if hasattr(self.config, 'cleanup_extra_ids'):
         extra_ids_re = "|".join(self.config.cleanup_extra_ids)
         self._remove_nodes_re = value + "|" + extra_ids_re
     else:        
         self._remove_nodes_re = value
 
-DocumentCleaner.remove_nodes_re = property(get_remove_nodes_re, set_remove_nodes_re) 
+DocumentCleaner.remove_nodes_re = property(get_remove_nodes_regex, set_remove_nodes_regex) 
 
 @app.route('/health', methods=['GET'])
 def health():

@@ -59,9 +59,17 @@ class TestServer(unittest.TestCase):
     def test_cleanup_extra_ids(self):
         url = 'https://ab.cd/path1/path2?q=1'
         config = Config()
-        config.cleanup_extra_ids = ['id1']
+        config.cleanup_extra_ids = ['artdeco-global-alert-container', 'artdeco-global-alerts-cls-offset']
         article = Article(url, config=config)
-        article.set_html("<html><body><p id='id1'>To be cleaned</p><p>This is example paragraph with some text123.</p></body></html>")
+        
+        article.set_html(('<html><body>'
+                          '<div id="artdeco-global-alert-container"><p>this text to removed</p></div>'
+                          '<div id="artdeco-global-alerts-cls-offset"><p>this text to be removed too</p></div>'
+                          '<p>This is example paragraph with some text.</p>'
+                          '</body></html>'))
         article.parse()
-        self.assertFalse('To be cleaned' in article.text)
-    
+        self.assertFalse('this text to removed' in article.text)
+        self.assertFalse('this text to be removed too' in article.text)
+        self.assertTrue('This is example paragraph with some text.' in article.text)
+        
+
