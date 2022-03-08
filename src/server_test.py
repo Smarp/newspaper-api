@@ -55,3 +55,21 @@ class TestServer(unittest.TestCase):
         self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect"), None)
         self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect?url=abc"), None)
         self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fab.cd"), "https://ab.cd")
+
+    def test_cleanup_extra_ids(self):
+        url = 'https://ab.cd/path1/path2?q=1'
+        config = Config()
+        config.cleanup_extra_ids = ['artdeco-global-alert-container', 'artdeco-global-alerts-cls-offset']
+        article = Article(url, config=config)
+        
+        article.set_html(('<html><body>'
+                          '<div id="artdeco-global-alert-container"><p>this text to removed</p></div>'
+                          '<div id="artdeco-global-alerts-cls-offset"><p>this text to be removed too</p></div>'
+                          '<p>This is example paragraph with some text.</p>'
+                          '</body></html>'))
+        article.parse()
+        self.assertFalse('this text to removed' in article.text)
+        self.assertFalse('this text to be removed too' in article.text)
+        self.assertTrue('This is example paragraph with some text.' in article.text)
+        
+
