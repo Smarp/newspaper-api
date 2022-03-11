@@ -11,6 +11,7 @@ from webpreview import web_preview
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from lxml import etree
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
@@ -202,6 +203,10 @@ def replace_title_text_from_title_url(article):
         article.text = article_from_url.text
     else:
         print("Linkedin: No shared link at all")
+        # Fetch post contents
+        html = get_li_post_html(article)
+        if html != None:
+            article.text = get_content(html)
 
     return article
 
@@ -215,6 +220,18 @@ def get_config(url):
         config.browser_user_agent = CUSTOM_USER_AGENT
 
     return config
+
+def get_li_post_html(article):
+    parser = article.config.get_parser()
+    nodes = parser.getElementsByTag(article.clean_doc, None, 'class', 'share-update-card__update-text')
+    if len(nodes) > 0:
+        return parser.nodeToString(nodes[0])
+    else:
+        return None
+
+def get_content(html):
+    soup = BeautifulSoup(html, 'lxml')
+    return soup.get_text()
 
 if __name__ == '__main__':
     port = os.getenv('NEWSPAPER_PORT', '38765')

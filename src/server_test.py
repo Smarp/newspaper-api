@@ -1,8 +1,10 @@
+from importlib.resources import path
 import unittest.mock
 from unittest.mock import patch
 
 from newspaper import Article, Config
 import server
+import json
 
 
 class TestServer(unittest.TestCase):
@@ -72,4 +74,25 @@ class TestServer(unittest.TestCase):
         self.assertFalse('this text to be removed too' in article.text)
         self.assertTrue('This is example paragraph with some text.' in article.text)
         
+    @patch('server.get_article')
+    @patch('server.is_linkedin_url')   
+    #@patch('Article.download') 
+    def test_fetch_text_from_post_without_link(self, is_linkedin_url_patch, get_article_patch):
+        url = 'https://ab.cd/path1/path2?q=1'
+        html = ('<html><body>'
+                '<div class="share-update-card__update-text">'
+                '<p>This is example paragraph with no link.</p>'
+                '<script>test</script>'
+                '</div>'
+                '</body></html>')
 
+        article = Article(url)
+        article.set_html(html)
+        article.set_title("")
+        article.parse()
+
+        get_article_patch.return_value = article
+        is_linkedin_url_patch.return_value = True
+
+        result = server.fetch_by_newspaper(url)
+        self.assertEqual(result[0], '{"authors": [], "html": %s, "images:": [], "movies": [], "publish_date": null, "text": "This is example paragraph with no link.", "title": "", "topimage": ""}' % (json.dumps(html)))
