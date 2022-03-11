@@ -1,4 +1,3 @@
-from importlib.resources import path
 import unittest.mock
 from unittest.mock import patch
 
