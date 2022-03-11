@@ -83,6 +83,14 @@ class TestServer(unittest.TestCase):
                 '<p>This is example paragraph with no link.</p>'
                 '<script>test</script>'
                 '</div>'
+
+                '<div class="share-update-card__update-text">'
+                '<p>This will be removed</p>'
+                '</div>'
+
+                '<div class="share-update-card__update-text">'
+                '<p>This will be removed too</p>'
+                '</div>'
                 '</body></html>')
 
         article = Article(url)
@@ -94,4 +102,8 @@ class TestServer(unittest.TestCase):
         is_linkedin_url_patch.return_value = True
 
         result = server.fetch_by_newspaper(url)
+
+        self.assertFalse('This will be removed' in article.text)
+        self.assertFalse('This will be removed too' in article.text)
+        self.assertTrue('This is example paragraph with no link.' in article.text)
         self.assertEqual(result[0], '{"authors": [], "html": %s, "images:": [], "movies": [], "publish_date": null, "text": "This is example paragraph with no link.", "title": "", "topimage": ""}' % (json.dumps(html)))
