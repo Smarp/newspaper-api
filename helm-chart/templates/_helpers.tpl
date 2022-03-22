@@ -50,14 +50,3 @@ app.kubernetes.io/name: {{ include "helm-chart.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app: {{ include "helm-chart.name" . }}
 {{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "helm-chart.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "helm-chart.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
