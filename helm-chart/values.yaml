@@ -49,12 +49,12 @@ resources: {}
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-   limits:
-     cpu: 750m
-     memory: 640Mi
-   requests:
-     cpu: 400m
-     memory: 400Mi
+  limits:
+    cpu: 750m
+    memory: 640Mi
+  requests:
+    cpu: 400m
+    memory: 400Mi
 
 autoscaling:
   enabled: false
