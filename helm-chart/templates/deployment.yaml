@@ -39,11 +39,11 @@ spec:
           livenessProbe:
             httpGet:
               path: {{ .Values.application.livenessProbe.path }}
-              port: {{ .Values.application.livenessProbe.port }}
+              port: {{ .Values.application.apiPort }}
           readinessProbe:
             httpGet:
               path: {{ .Values.application.readinessProbe.path }}
-              port: {{ .Values.application.readinessProbe.port }}
+              port: {{ .Values.application.apiPort }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

@@ -10,7 +10,7 @@ application:
     path: /health
 
 image:
-  repository: smarp/newspaper-api:v2.4
+  repository: smarp/newspaper-api
   tag: v2.4
   pullPolicy: Always
 
