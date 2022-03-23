@@ -1,0 +1,11 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "newspaper-api.fullname" . }}
+  labels:
+    {{- include "newspaper-api.labels" . | nindent 4 }}
+spec:
+  minAvailable: 50%
+  selector:
+    matchLabels:
+      {{- include "newspaper-api.selectorLabels" . | nindent 6 }}
