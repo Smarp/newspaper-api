@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: newspaper-api-env
 data:
-  custom_user_agent: ""
-  custom_domains: ""
+  custom_domains: partner.booking.com
+  custom_user_agent: Mozilla/5.0
