@@ -46,6 +46,17 @@ spec:
               port: {{ .Values.application.apiPort }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: CUSTOM_USER_AGENT
+              valueFrom:
+                configMapKeyRef:
+                  name: newspaper-api-env
+                  key: custom_user_agent
+            - name: CUSTOM_DOMAINS
+              valueFrom:
+                configMapKeyRef:
+                  name: newspaper-api-env
+                  key: custom_domains
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -58,14 +69,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      env:
-        - name: CUSTOM_USER_AGENT
-          valueFrom:
-            configMapKeyRef:
-              name: newspaper-api-env
-              key: custom_user_agent
-        - name: CUSTOM_DOMAINS
-          valueFrom:
-            configMapKeyRef:
-              name: newspaper-api-env
-              key: custom_domains
