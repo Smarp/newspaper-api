@@ -40,20 +40,20 @@ spec:
             httpGet:
               path: {{ .Values.application.livenessProbe.path }}
               port: {{ .Values.application.apiPort }}
-              initialDelaySeconds: {{ .Values.application.livenessProbe.initialDelaySeconds }}
-              timeoutSeconds: {{ .Values.application.livenessProbe.timeoutSeconds }}
-              successThreshold: {{ .Values.application.livenessProbe.successThreshold }}
-              failureThreshold: {{ .Values.application.livenessProbe.failureThreshold }}
-              periodSeconds: {{ .Values.application.livenessProbe.periodSeconds }}
+            initialDelaySeconds: {{ .Values.application.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.application.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.application.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.application.livenessProbe.failureThreshold }}
+            periodSeconds: {{ .Values.application.livenessProbe.periodSeconds }}
           readinessProbe:
             httpGet:
               path: {{ .Values.application.readinessProbe.path }}
               port: {{ .Values.application.apiPort }}
-              initialDelaySeconds: {{ .Values.application.readinessProbe.initialDelaySeconds }}
-              timeoutSeconds: {{ .Values.application.readinessProbe.timeoutSeconds }}
-              successThreshold: {{ .Values.application.readinessProbe.successThreshold }}
-              failureThreshold: {{ .Values.application.readinessProbe.failureThreshold }}
-              periodSeconds: {{ .Values.application.readinessProbe.periodSeconds }}
+            initialDelaySeconds: {{ .Values.application.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.application.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.application.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.application.readinessProbe.failureThreshold }}
+            periodSeconds: {{ .Values.application.readinessProbe.periodSeconds }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
