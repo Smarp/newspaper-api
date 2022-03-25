@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from newspaper import Article, Config
 import server
+import json
 
 
 class TestServer(unittest.TestCase):
@@ -55,3 +56,54 @@ class TestServer(unittest.TestCase):
         self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect"), None)
         self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect?url=abc"), None)
         self.assertEqual(server.find_redirect_url("https://www.linkedin.com/redir/redirect?url=https%3A%2F%2Fab.cd"), "https://ab.cd")
+
+    def test_cleanup_extra_ids(self):
+        url = 'https://ab.cd/path1/path2?q=1'
+        config = Config()
+        config.cleanup_extra_ids = ['artdeco-global-alert-container', 'artdeco-global-alerts-cls-offset']
+        article = Article(url, config=config)
+        
+        article.set_html(('<html><body>'
+                          '<div id="artdeco-global-alert-container"><p>this text to removed</p></div>'
+                          '<div id="artdeco-global-alerts-cls-offset"><p>this text to be removed too</p></div>'
+                          '<p>This is example paragraph with some text.</p>'
+                          '</body></html>'))
+        article.parse()
+        self.assertFalse('this text to removed' in article.text)
+        self.assertFalse('this text to be removed too' in article.text)
+        self.assertTrue('This is example paragraph with some text.' in article.text)
+        
+    @patch('server.get_article')
+    @patch('server.is_linkedin_url')   
+    #@patch('Article.download') 
+    def test_fetch_text_from_post_without_link(self, is_linkedin_url_patch, get_article_patch):
+        url = 'https://ab.cd/path1/path2?q=1'
+        html = ('<html><body>'
+                '<div class="share-update-card__update-text">'
+                '<p>This is example paragraph with no link.</p>'
+                '<script>test</script>'
+                '</div>'
+
+                '<div class="share-update-card__update-text">'
+                '<p>This will be removed</p>'
+                '</div>'
+
+                '<div class="share-update-card__update-text">'
+                '<p>This will be removed too</p>'
+                '</div>'
+                '</body></html>')
+
+        article = Article(url)
+        article.set_html(html)
+        article.set_title("")
+        article.parse()
+
+        get_article_patch.return_value = article
+        is_linkedin_url_patch.return_value = True
+
+        result = server.fetch_by_newspaper(url)
+
+        self.assertFalse('This will be removed' in article.text)
+        self.assertFalse('This will be removed too' in article.text)
+        self.assertTrue('This is example paragraph with no link.' in article.text)
+        self.assertEqual(result[0], '{"authors": [], "html": %s, "images:": [], "movies": [], "publish_date": null, "text": "This is example paragraph with no link.", "title": "", "topimage": ""}' % (json.dumps(html)))

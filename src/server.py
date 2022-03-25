@@ -11,6 +11,7 @@ from webpreview import web_preview
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from lxml import etree
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
@@ -23,6 +24,21 @@ CUSTOM_USER_AGENT = os.getenv('CUSTOM_USER_AGENT', Config().browser_user_agent)
 CUSTOM_DOMAINS = set(os.getenv('CUSTOM_DOMAINS', '').split())
 
 OG_TAG_METHOD = "ogtag"
+
+from newspaper.cleaners import DocumentCleaner
+
+# Patch document cleanup regex for custom element ids 
+def get_remove_nodes_regex(self):
+    return self._remove_nodes_re
+
+def set_remove_nodes_regex(self, value):
+    if hasattr(self.config, 'cleanup_extra_ids'):
+        extra_ids_re = "|".join(self.config.cleanup_extra_ids)
+        self._remove_nodes_re = value + "|" + extra_ids_re
+    else:        
+        self._remove_nodes_re = value
+
+DocumentCleaner.remove_nodes_re = property(get_remove_nodes_regex, set_remove_nodes_regex) 
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -49,6 +65,8 @@ def is_linkedin_redirect_url(url):
 def fetch_by_newspaper(url):
     if is_linkedin_url(url):
         config = Config()
+        # custom cleanup list for cookie banner
+        config.cleanup_extra_ids = ["artdeco-global-alert-container", "artdeco-global-alerts-cls-offset"]
         config.MAX_TITLE = 1000
         article = get_article(url, config)
         article = replace_title_text_from_title_url(article)
@@ -185,6 +203,10 @@ def replace_title_text_from_title_url(article):
         article.text = article_from_url.text
     else:
         print("Linkedin: No shared link at all")
+        # Fetch post contents
+        html = get_li_post_html(article)
+        if html != None:
+            article.text = get_content(html)
 
     return article
 
@@ -198,6 +220,18 @@ def get_config(url):
         config.browser_user_agent = CUSTOM_USER_AGENT
 
     return config
+
+def get_li_post_html(article):
+    parser = article.config.get_parser()
+    nodes = parser.getElementsByTag(article.clean_doc, None, 'class', 'share-update-card__update-text')
+    if len(nodes) > 0:
+        return parser.nodeToString(nodes[0])
+    else:
+        return None
+
+def get_content(html):
+    soup = BeautifulSoup(html, 'lxml')
+    return soup.get_text()
 
 if __name__ == '__main__':
     port = os.getenv('NEWSPAPER_PORT', '38765')
