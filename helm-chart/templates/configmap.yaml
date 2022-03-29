@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: newspaper-api-env
+data:
+  custom_domains: partner.booking.com
+  custom_user_agent: Mozilla/5.0

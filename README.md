@@ -32,8 +32,8 @@ Port: 38765
 ## Deployment
 * put a new tag on https://github.com/Smarp/newspaper-api/releases
 * wait until new docker image will be available for that tag https://hub.docker.com/r/smarp/newspaper-api/tags (might take 5-30 min)  
-* `kubectl diff -f newspaper-api.yml` to check for what’s going to be applied
-* `kubectl apply -f newspaper-api.yml` to update the deployment with the new tag
+* `helm diff upgrade --namespace stable newspaper-api . -f values.yaml` to check for what's going to be applied
+* `helm upgrade -i --namespace stable newspaper-api . -f values.yaml` to update the deployment with the new tag
 
 ## Environment Variables
 

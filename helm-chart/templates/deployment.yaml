@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "newspaper-api.fullname" . }}
+  labels:
+    {{- include "newspaper-api.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "newspaper-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "newspaper-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.application.apiPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.application.livenessProbe.path }}
+              port: {{ .Values.application.apiPort }}
+            initialDelaySeconds: {{ .Values.application.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.application.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.application.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.application.livenessProbe.failureThreshold }}
+            periodSeconds: {{ .Values.application.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.application.readinessProbe.path }}
+              port: {{ .Values.application.apiPort }}
+            initialDelaySeconds: {{ .Values.application.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.application.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.application.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.application.readinessProbe.failureThreshold }}
+            periodSeconds: {{ .Values.application.readinessProbe.periodSeconds }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: CUSTOM_USER_AGENT
+              valueFrom:
+                configMapKeyRef:
+                  name: newspaper-api-env
+                  key: custom_user_agent
+            - name: CUSTOM_DOMAINS
+              valueFrom:
+                configMapKeyRef:
+                  name: newspaper-api-env
+                  key: custom_domains
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
