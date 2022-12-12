@@ -1,0 +1,16 @@
+version: "3.3"
+networks:
+  smarp-net:
+    name: smarp-net
+    driver: bridge
+
+services:
+  frontend:
+    build: .
+    container_name: "newspaper"
+    ports:
+      - 38765:38765
+    networks:
+      - smarp-net
+    hostname: newspaper
+
