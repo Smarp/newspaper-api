@@ -2,7 +2,7 @@
 
 import logging
 from flask import Flask, request
-from newspaper import Article, fulltext, Config, build
+from newspaper import Article, fulltext, Config, build, extractors
 import os
 import json
 import re
@@ -27,18 +27,22 @@ OG_TAG_METHOD = "ogtag"
 
 from newspaper.cleaners import DocumentCleaner
 
-# Patch document cleanup regex for custom element ids 
+
+# Patch document cleanup regex for custom element ids
 def get_remove_nodes_regex(self):
     return self._remove_nodes_re
+
 
 def set_remove_nodes_regex(self, value):
     if hasattr(self.config, 'cleanup_extra_ids'):
         extra_ids_re = "|".join(self.config.cleanup_extra_ids)
         self._remove_nodes_re = value + "|" + extra_ids_re
-    else:        
+    else:
         self._remove_nodes_re = value
 
-DocumentCleaner.remove_nodes_re = property(get_remove_nodes_regex, set_remove_nodes_regex) 
+
+DocumentCleaner.remove_nodes_re = property(get_remove_nodes_regex, set_remove_nodes_regex)
+
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -56,11 +60,14 @@ def api_top_image():
 
     return fetch_by_newspaper(url)
 
+
 def is_linkedin_url(url):
     return url.startswith(linkedinUrl)
 
+
 def is_linkedin_redirect_url(url):
     return url.startswith(linkedinRedirectUrl)
+
 
 def fetch_by_newspaper(url):
     if is_linkedin_url(url):
@@ -69,7 +76,6 @@ def fetch_by_newspaper(url):
         config.cleanup_extra_ids = ["artdeco-global-alert-container", "artdeco-global-alerts-cls-offset"]
         config.MAX_TITLE = 1000
         article = get_article(url, config)
-        article = replace_title_text_from_title_url(article)
     else:
         article = get_article(url, config=get_config(url))
     return json.dumps({
@@ -81,6 +87,7 @@ def fetch_by_newspaper(url):
         "text": article.text,
         "title": article.title,
         "topimage": article.top_image}), 200, {'Content-Type': 'application/json'}
+
 
 def fetch_og_tags_internal(url):
     return web_preview(url, timeout=20)
@@ -146,6 +153,8 @@ def get_article(url, config=Config()):
                     "application/x-gzpdf": "%PDF-"}
     article = Article(url, request_timeout=20,
                       ignored_content_types_defaults=pdf_defaults, config=config)
+    if is_linkedin_url(url):
+        article.extractor = LinkedInContentExtractor(config=config)
     article.download()
     # uncomment this if 200 is desired in case of bad url
     # article.set_html(article.html if article.html else '<html></html>')
@@ -156,62 +165,26 @@ def get_article(url, config=Config()):
     return article
 
 
-def html_to_text(html):
-    try:
-        return fulltext(html)
-    except Exception:
-        return ""
+class LinkedInContentExtractor(extractors.ContentExtractor):
+    def __init__(self, config):
+        extractors.ContentExtractor.__init__(self, config)
 
-def find_redirect_url(url):
-    if not is_linkedin_redirect_url(url):
-        return None
+        # we store it here to pass to the is_boostable() function
+        # otherwise we need to override the calculate_best_node() function that has too much logic
+        # storing the doc here should not be a problem, since we create a new instance of extractor for every document
+        self.doc = None
 
-    parse_result = urlparse(url)
-    query_url = parse_qs(parse_result.query).get("url")
-    if query_url == None:
-        return None
+    def calculate_best_node(self, doc):
+        self.doc = doc
+        return extractors.ContentExtractor.calculate_best_node(self, doc)
 
-    redirect_urls = find_urls(query_url[0])
-    if len(redirect_urls) == 0:
-        return None
+    def is_boostable(self, node):
+        doc_description = self.get_meta_description(self.doc)
+        node_text = self.parser.getText(node)
+        if doc_description and node_text and node_text.startswith(doc_description[:10]):
+            return True
+        return extractors.ContentExtractor.is_boostable(self, node)
 
-    return redirect_urls[0]
-
-def replace_title_text_from_title_url(article):
-    # try to fetch url linkedin post
-    urls = find_urls(article.title)
-    if len(urls) == 0:
-        htmlTree = etree.HTML(article.html)
-        title = htmlTree.xpath("//title/text()")
-
-        if len(title) > 0:
-            urls = find_urls(title[0])
-
-    if len(urls) == 0:
-        # Try to retrieve link in update section of the page
-        urls = htmlTree.xpath(
-            "//*[contains(@class, 'share-update-section')]//*[contains(@class, 'share-article__title-link')]/@href")
-
-    if len(urls) > 0:
-        # check if url is a redirection link
-        url = find_redirect_url(urls[0])
-        if url == None:
-            url = urls[0]
-
-        article_from_url = get_article(url)
-        article.title = article_from_url.title
-        article.text = article_from_url.text
-    else:
-        print("Linkedin: No shared link at all")
-        # Fetch post contents
-        html = get_li_post_html(article)
-        if html != None:
-            article.text = get_content(html)
-
-    return article
-
-def find_urls(string):
-    return re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
 
 def get_config(url):
     parseResult = urlparse(url)
@@ -221,17 +194,6 @@ def get_config(url):
 
     return config
 
-def get_li_post_html(article):
-    parser = article.config.get_parser()
-    nodes = parser.getElementsByTag(article.clean_doc, None, 'class', 'share-update-card__update-text')
-    if len(nodes) > 0:
-        return parser.nodeToString(nodes[0])
-    else:
-        return None
-
-def get_content(html):
-    soup = BeautifulSoup(html, 'lxml')
-    return soup.get_text()
 
 if __name__ == '__main__':
     port = os.getenv('NEWSPAPER_PORT', '38765')
