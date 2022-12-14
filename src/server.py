@@ -2,16 +2,13 @@
 
 import logging
 from flask import Flask, request
-from newspaper import Article, fulltext, Config, build, extractors
+from newspaper import Article, Config, build, extractors
 import os
 import json
 import re
 import html2text
 from webpreview import web_preview
 from urllib.parse import urlparse
-from urllib.parse import parse_qs
-from lxml import etree
-from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
@@ -160,9 +157,23 @@ def get_article(url, config=Config()):
     # article.set_html(article.html if article.html else '<html></html>')
     article.parse()
     if article.text == "" and article.html != "%PDF-":
-        paper = build(url, memoize_articles=False, fetch_images=False)
-        article.text = paper.description
+        article.text = get_text(article)
+        if article.text == "":
+            paper = build(url, memoize_articles=False, fetch_images=False)
+            article.text = paper.description
     return article
+
+
+def get_text(article):
+    doc = article.clean_doc
+    doc_description = article.extractor.get_meta_description(doc)
+    nodes = doc.xpath('.//p[starts-with(text(),"' + doc_description[:10] + '")]')
+    if not nodes:
+        return doc_description
+    children = nodes[0].getchildren()
+    children_texts = list(map(lambda x: x.text + x.tail, children))
+    article_text = (nodes[0].text + ''.join(children_texts)).replace(os.linesep, ' ').strip()
+    return article_text if article_text else doc_description
 
 
 class LinkedInContentExtractor(extractors.ContentExtractor):
