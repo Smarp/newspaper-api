@@ -21,7 +21,7 @@ application:
 
 image:
   repository: smarp/newspaper-api
-  tag: v2.7
+  tag: v2.9
   pullPolicy: Always
 
 imagePullSecrets: []
