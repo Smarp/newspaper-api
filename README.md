@@ -1,6 +1,6 @@
 # newspaper-api
 
-- Deprecated. Migrated to private repository
+Deprecated. Migrated to private repository
 
 Port: 38765
 
